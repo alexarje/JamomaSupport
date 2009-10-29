@@ -14,7 +14,7 @@ SVNREV = 40156
 
 
 // Paths
-C74SUPPORT =	$(SRCROOT)/../../../../../Tools/library/max-sdk/c74support
+C74SUPPORT =	$(SRCROOT)/../../../supports/objectivemax/SDKs/Max5/c74support
 DSPLIB =		$(SRCROOT)/../../../../DSP
 GRAPHICS =		$(SRCROOT)/../../../../Graphics
 MULTICORE =		$(SRCROOT)/../../../../Multicore
@@ -31,7 +31,7 @@ INSTALL_PATH = /
 
 // Special Files
 GCC_PREFIX_HEADER = $(C74SUPPORT)/max-includes/macho-prefix.pch
-INFOPLIST_FILE = $(SRCROOT)/../../../../../Tools/library/common/Info.plist
+INFOPLIST_FILE = $(SRCROOT)/../../../supports/max/Info.plist
 
 
 // Per architecture and deployment settings
