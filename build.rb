@@ -170,7 +170,7 @@ puts ""
 puts "Building Max Externals..."
 
 zero_count
-build_dir("examples/MaxMSP", configuration, clean)  
+build_dir("implementations/MaxMSP", configuration, clean)  
 ex_total, ex_count = get_count
 
 extension = ".mxo"
