@@ -2,19 +2,23 @@
 # Library of Ruby stuff for Jamoma
 ###################################################################
 
-require 'open3'
-require 'fileutils'
-require 'pathname'
-require "platform"
-require 'rexml/document'
-include REXML
+if $jamomalib_loaded == "yup"
+else
+  $jamomalib_loaded = "yup"
 
-def win32?
-  (Platform::OS == :unix && Platform::IMPL == :cygwin) || Platform::OS == :win32
+  require 'open3'
+  require 'fileutils'
+  require 'pathname'
+  require "platform"
+  require 'rexml/document'
+  include REXML
+
+  def win32?
+    (Platform::OS == :unix && Platform::IMPL == :cygwin) || Platform::OS == :win32
+  end
+
+  require 'wininit' if win32?
 end
-
-require 'wininit' if win32?
-
 
 #######
 ## SUB ROUTINES
