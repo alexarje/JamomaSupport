@@ -95,6 +95,7 @@ projectNameParts = libdir.split('/')
 @projectName = projectNameParts[projectNameParts.size-2];
 
 
+
 puts "Building Jamoma #{@projectName}"
 puts "==================================================="
 puts "  configuration: #{configuration}"
@@ -109,6 +110,77 @@ puts "  "
 @svn_root = "../"
 @fail_array = Array.new
 @zerolink = false
+
+
+
+
+if @projectName == "Modular"
+
+#  if(ARGV.length > 3)
+#    version = ARGV[3]
+#    version_digits = version.split(/\./)
+#
+#    version_mod = version_digits[3] if version_digits.size() > 3
+#    version_sub = version_digits[2] if version_digits.size() > 2
+#    version_min = version_digits[1] if version_digits.size() > 1
+#    version_maj = version_digits[0] if version_digits.size() > 0
+#  end
+#  if(ARGV.length > 4)
+#    revision = ARGV[4]
+#  end
+
+
+  ###################################################################
+  # REV NUMBERS
+  ###################################################################
+  puts "Updating Version Information..."
+  zero_count
+
+  #XCConfig
+  file_path = "#{@svn_root}/library/JamomaModular.xcconfig"
+  `cp "#{@svn_root}/library/JamomaModular.template.xcconfig" "#{file_path}"`
+
+  if FileTest.exist?(file_path)
+    f = File.open("#{file_path}", "r+")
+    str = f.read
+
+    if (version_mod == '' || version_mod.match(/rc(.*)/))
+      str.sub!(/PRODUCT_VERSION = (.*)/, "PRODUCT_VERSION = #{version_maj}.#{version_min}.#{version_sub}")
+    else
+      str.sub!(/PRODUCT_VERSION = (.*)/, "PRODUCT_VERSION = #{version_maj}.#{version_min}.#{version_sub}#{version_mod}")
+    end
+    str.sub!(/SVNREV = (.*)/, "SVNREV = #{revision}")
+
+    f.rewind
+    f.write(str)
+    f.truncate(f.pos)
+    f.close
+  end
+
+  #Header
+  file_path = "#{@svn_root}/library/source/TTModularVersion.h"
+  `cp "#{@svn_root}/library/source/TTModularVersion.template.h" "#{file_path}"`
+
+  if FileTest.exist?(file_path)
+    f = File.open("#{file_path}", "r+")
+    str = f.read
+
+    if (version_mod == '' || version_mod.match(/rc(.*)/))
+      str.sub!(/#define TT_MODULAR_VERSION "(.*)"/, "#define TT_MODULAR_VERSION \"#{version_maj}.#{version_min}.#{version_sub}\"")
+    else
+      str.sub!(/#define TT_MODULAR_VERSION "(.*)"/, "#define TT_MODULAR_VERSION \"#{version_maj}.#{version_min}.#{version_sub} #{version_mod}\"")
+    end
+    str.sub!(/TT_MODULAR_REV "(.*)"/, "TT_MODULAR_REV \"#{revision}\"")
+
+    f.rewind
+    f.write(str)
+    f.truncate(f.pos)
+    f.close
+  end
+
+
+
+end
 
 
 
