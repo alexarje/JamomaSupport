@@ -21,8 +21,13 @@ else
     (Platform::OS == :unix && Platform::IMPL == :cygwin) || Platform::OS == :win32
   end
 
-  require 'wininit' if win32?
-
+if win32?
+  if defined? $main_repository
+    require "supports/wininit"
+  else
+    require 'wininit' 
+  end
+end
 
   #######
   ## SUB ROUTINES
