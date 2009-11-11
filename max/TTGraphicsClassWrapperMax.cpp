@@ -74,7 +74,7 @@ ObjectPtr wrappedUIClass_new(SymbolPtr name, AtomCount argc, AtomPtr argv)
 		//	| JBOX_BACKGROUND		// 9
 		//	| JBOX_NOFLOATINSPECTOR	// 10
 		//	| JBOX_TEXTFIELD		// 11
-		| JBOX_MOUSEDRAGDELTA	// 12
+		//    | JBOX_MOUSEDRAGDELTA	// 12
 		//	| JBOX_COLOR			// 13
 		//	| JBOX_BINBUF			// 14
 		//	| JBOX_DRAWIOLOCKED		// 15
@@ -241,6 +241,119 @@ void wrappedUIClass_anything(TTPtr self, SymbolPtr s, AtomCount argc, AtomPtr ar
 }
 
 
+TTPtr wrappedUIClass_oksize(TTPtr self, t_rect *newrect)
+{
+	WrappedUIInstancePtr	x = (WrappedUIInstancePtr)self;
+	TTValue					v;
+
+	v.setSize(4);
+	v.set(0, 0.0);
+	v.set(1, 0.0);
+	v.set(2, newrect->width);
+	v.set(3, newrect->height);
+	
+	x->wrappedObject->sendMessage(TT("verifyResize"), v);
+	
+	v.get(2, newrect->width); 
+	v.get(3, newrect->height);
+	return (void *)1;
+}
+
+
+void wrappedUIClass_mousedblclick(TTPtr self, ObjectPtr patcherview, t_pt pt, long modifiers)
+{
+	WrappedUIInstancePtr	x = (WrappedUIInstancePtr)self;
+	TTValue					v;
+	
+	v.setSize(3);
+	v.set(0, pt.x);
+	v.set(1, pt.y);
+	v.set(2, (int)modifiers);	
+	x->wrappedObject->sendMessage(TT("mouseDoubleClicked"), v);
+	jbox_redraw((t_jbox *)x);
+}
+
+void wrappedUIClass_mousedown(TTPtr self, ObjectPtr patcherview, t_pt pt, long modifiers)
+{
+	WrappedUIInstancePtr	x = (WrappedUIInstancePtr)self;
+	TTValue					v;
+	
+	v.setSize(3);
+	v.set(0, pt.x);
+	v.set(1, pt.y);
+	v.set(2, (int)modifiers);	
+	x->wrappedObject->sendMessage(TT("mouseDown"), v);
+	jbox_redraw((t_jbox *)x);
+}
+
+void wrappedUIClass_mousedrag(TTPtr self, ObjectPtr patcherview, t_pt pt, long modifiers)
+{
+	WrappedUIInstancePtr	x = (WrappedUIInstancePtr)self;
+	TTValue					v;
+	
+	v.setSize(3);
+	v.set(0, pt.x);
+	v.set(1, pt.y);
+	v.set(2, (int)modifiers);	
+	x->wrappedObject->sendMessage(TT("mouseDragged"), v);
+	jbox_redraw((t_jbox *)x);
+}
+
+void wrappedUIClass_mouseup(TTPtr self, ObjectPtr patcherview, t_pt pt, long modifiers)
+{
+	WrappedUIInstancePtr	x = (WrappedUIInstancePtr)self;
+	TTValue					v;
+	
+	v.setSize(3);
+	v.set(0, pt.x);
+	v.set(1, pt.y);
+	v.set(2, (int)modifiers);	
+	x->wrappedObject->sendMessage(TT("mouseUp"), v);
+	jbox_redraw((t_jbox *)x);
+}
+
+
+void wrappedUIClass_mouseenter(TTPtr self, ObjectPtr patcherview, t_pt pt, long modifiers)
+{
+	WrappedUIInstancePtr	x = (WrappedUIInstancePtr)self;
+	TTValue					v;
+	
+	v.setSize(3);
+	v.set(0, pt.x);
+	v.set(1, pt.y);
+	v.set(2, (int)modifiers);	
+	x->wrappedObject->sendMessage(TT("mouseEntered"), v);
+	jbox_redraw((t_jbox *)x);
+}
+
+void wrappedUIClass_mousemove(TTPtr self, ObjectPtr patcherview, t_pt pt, long modifiers)
+{
+	WrappedUIInstancePtr	x = (WrappedUIInstancePtr)self;
+	TTValue					v;
+	
+	v.setSize(3);
+	v.set(0, pt.x);
+	v.set(1, pt.y);
+	v.set(2, (int)modifiers);	
+	x->wrappedObject->sendMessage(TT("mouseMoved"), v);
+	jbox_redraw((t_jbox *)x);
+}
+
+void wrappedUIClass_mouseleave(TTPtr self, ObjectPtr patcherview, t_pt pt, long modifiers)
+{
+	WrappedUIInstancePtr	x = (WrappedUIInstancePtr)self;
+	TTValue					v;
+	
+	v.setSize(3);
+	v.set(0, pt.x);
+	v.set(1, pt.y);
+	v.set(2, (int)modifiers);	
+	x->wrappedObject->sendMessage(TT("mouseExited"), v);
+	jbox_redraw((t_jbox *)x);
+}
+
+
+
 TTErr wrapTTClassAsMaxUIClass(TTSymbolPtr ttblueClassName, char* maxClassName, WrappedClassPtr* c)
 {
 	return wrapTTClassAsMaxUIClass(ttblueClassName, maxClassName, c, (WrappedClassOptionsPtr)NULL);
@@ -284,10 +397,33 @@ TTErr wrapTTClassAsMaxUIClass(TTSymbolPtr ttblueClassName, char* maxClassName, W
 		TTSymbolPtr			name = NULL;
 		
 		v.get(i, &name);
-		if (name == TT("updateMaxNumChannels") || name == TT("updateSr"))
+		if (name == TT("updateMaxNumChannels") || 
+			name == TT("updateSr") || 
+			name == TT("draw") || 
+			name == TT("paint") || 
+			name == TT("resize") || 
+			name == TT("getData")
+		)
 			continue;	// don't expose these attributes to Max users
 
-		class_addmethod(wrappedMaxClass->maxClass, (method)wrappedUIClass_anything, (char*)name->getCString(), A_GIMME, 0);
+		if (name == TT("mouseDown"))
+			class_addmethod(wrappedMaxClass->maxClass, (method)wrappedUIClass_mousedown,	"mousedown",	A_CANT, 0);
+		else if (name == TT("mouseDragged"))
+			class_addmethod(wrappedMaxClass->maxClass, (method)wrappedUIClass_mousedrag,	"mousedrag",	A_CANT, 0);
+		else if (name == TT("mouseUp"))
+			class_addmethod(wrappedMaxClass->maxClass, (method)wrappedUIClass_mouseup,		"mouseup",		A_CANT, 0);
+		else if (name == TT("mouseEntered"))
+			class_addmethod(wrappedMaxClass->maxClass, (method)wrappedUIClass_mouseenter,	"mouseenter",	A_CANT, 0);
+		else if (name == TT("mouseExited"))
+			class_addmethod(wrappedMaxClass->maxClass, (method)wrappedUIClass_mouseleave,	"mouseleave",	A_CANT, 0);
+		else if (name == TT("mouseMoved"))
+			class_addmethod(wrappedMaxClass->maxClass, (method)wrappedUIClass_mousemove,	"mousemove",	A_CANT, 0);
+		else if (name == TT("mouseDoubleClicked"))
+			class_addmethod(wrappedMaxClass->maxClass, (method)wrappedUIClass_mousedblclick,"mousedoubleclick",	A_CANT, 0);
+		else if (name == TT("verifyResize"))
+			class_addmethod(wrappedMaxClass->maxClass, (method)wrappedUIClass_oksize,		"oksize",		A_CANT, 0);
+		else
+			class_addmethod(wrappedMaxClass->maxClass, (method)wrappedUIClass_anything, (char*)name->getCString(), A_GIMME, 0);
 	}
 	
 	o->getAttributeNames(v);
