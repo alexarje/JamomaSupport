@@ -23,6 +23,25 @@ typedef WrappedUIInstance* WrappedUIInstancePtr;	///< Pointer to a wrapped insta
 static t_hashtab*	wrappedMaxClasses = NULL;
 
 
+int convertModifiersFromMaxToTTGraphics(int maxModifiers)
+{
+	int ttGraphicsModifiers = 0;
+	
+	if (maxModifiers & eCapsLock)
+		ttGraphicsModifiers |= TTModifierCapslock;
+	else if (maxModifiers & eShiftKey)
+		ttGraphicsModifiers |= TTModifierShiftKey;
+	else if (maxModifiers & eControlKey)
+		ttGraphicsModifiers |= TTModifierControlKey;
+	else if (maxModifiers & eAltKey)
+		ttGraphicsModifiers |= TTModifierAltKey;
+	else if (maxModifiers & eCommandKey)
+		ttGraphicsModifiers |= TTModifierCommandKey;
+	
+	return ttGraphicsModifiers;
+}
+
+
 ObjectPtr wrappedUIClass_new(SymbolPtr name, AtomCount argc, AtomPtr argv)
 {	
 	WrappedClass*			wrappedMaxClass = NULL;
@@ -268,7 +287,7 @@ void wrappedUIClass_mousedblclick(TTPtr self, ObjectPtr patcherview, t_pt pt, lo
 	v.setSize(3);
 	v.set(0, pt.x);
 	v.set(1, pt.y);
-	v.set(2, (int)modifiers);	
+	v.set(2, convertModifiersFromMaxToTTGraphics(modifiers));
 	x->wrappedObject->sendMessage(TT("mouseDoubleClicked"), v);
 	jbox_redraw((t_jbox *)x);
 }
@@ -281,7 +300,7 @@ void wrappedUIClass_mousedown(TTPtr self, ObjectPtr patcherview, t_pt pt, long m
 	v.setSize(3);
 	v.set(0, pt.x);
 	v.set(1, pt.y);
-	v.set(2, (int)modifiers);	
+	v.set(2, convertModifiersFromMaxToTTGraphics(modifiers));
 	x->wrappedObject->sendMessage(TT("mouseDown"), v);
 	jbox_redraw((t_jbox *)x);
 }
@@ -294,7 +313,7 @@ void wrappedUIClass_mousedrag(TTPtr self, ObjectPtr patcherview, t_pt pt, long m
 	v.setSize(3);
 	v.set(0, pt.x);
 	v.set(1, pt.y);
-	v.set(2, (int)modifiers);	
+	v.set(2, convertModifiersFromMaxToTTGraphics(modifiers));
 	x->wrappedObject->sendMessage(TT("mouseDragged"), v);
 	jbox_redraw((t_jbox *)x);
 }
@@ -307,7 +326,7 @@ void wrappedUIClass_mouseup(TTPtr self, ObjectPtr patcherview, t_pt pt, long mod
 	v.setSize(3);
 	v.set(0, pt.x);
 	v.set(1, pt.y);
-	v.set(2, (int)modifiers);	
+	v.set(2, convertModifiersFromMaxToTTGraphics(modifiers));
 	x->wrappedObject->sendMessage(TT("mouseUp"), v);
 	jbox_redraw((t_jbox *)x);
 }
@@ -321,7 +340,7 @@ void wrappedUIClass_mouseenter(TTPtr self, ObjectPtr patcherview, t_pt pt, long 
 	v.setSize(3);
 	v.set(0, pt.x);
 	v.set(1, pt.y);
-	v.set(2, (int)modifiers);	
+	v.set(2, convertModifiersFromMaxToTTGraphics(modifiers));
 	x->wrappedObject->sendMessage(TT("mouseEntered"), v);
 	jbox_redraw((t_jbox *)x);
 }
@@ -334,7 +353,7 @@ void wrappedUIClass_mousemove(TTPtr self, ObjectPtr patcherview, t_pt pt, long m
 	v.setSize(3);
 	v.set(0, pt.x);
 	v.set(1, pt.y);
-	v.set(2, (int)modifiers);	
+	v.set(2, convertModifiersFromMaxToTTGraphics(modifiers));
 	x->wrappedObject->sendMessage(TT("mouseMoved"), v);
 	jbox_redraw((t_jbox *)x);
 }
@@ -347,7 +366,7 @@ void wrappedUIClass_mouseleave(TTPtr self, ObjectPtr patcherview, t_pt pt, long 
 	v.setSize(3);
 	v.set(0, pt.x);
 	v.set(1, pt.y);
-	v.set(2, (int)modifiers);	
+	v.set(2, convertModifiersFromMaxToTTGraphics(modifiers));
 	x->wrappedObject->sendMessage(TT("mouseExited"), v);
 	jbox_redraw((t_jbox *)x);
 }
