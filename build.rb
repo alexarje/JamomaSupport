@@ -17,6 +17,8 @@ if(ARGV.length == 0)
 end
 
 configuration = ARGV[0];
+configuration = "Development" if configuration == "dev"
+configuration = "Deployment" if configuration == "dep"
 if win32?
  	 if(configuration == "Development" || configuration == "Debug" )
     		configuration = "Debug"
