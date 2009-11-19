@@ -93,7 +93,7 @@ end
 
 projectNameParts = libdir.split('/')
 @projectName = projectNameParts[projectNameParts.size-2];
-
+@projectName.gsub!(/Jamoma/, "")
 
 
 puts "Building Jamoma #{@projectName}"
