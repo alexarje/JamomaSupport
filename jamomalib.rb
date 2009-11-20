@@ -29,6 +29,16 @@ if win32?
   end
 end
 
+if win32?
+  def mac?
+    false
+  end
+else
+  def mac?
+    true
+  end
+end
+
   #######
   ## SUB ROUTINES
   #######
