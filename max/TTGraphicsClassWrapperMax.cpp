@@ -481,9 +481,9 @@ TTErr wrapTTClassAsMaxUIClass(TTSymbolPtr ttblueClassName, char* maxClassName, W
 			maxType = _sym_symbol;
 		
 		// convert first letter to lower-case if it isn't already
-		nameSize = name->getString().size();
+		nameSize = name->getString().length();
 		nameCString = new char[nameSize+1];
-		strncpy(nameCString, name->getCString(), nameSize);
+		strncpy_zero(nameCString, name->getCString(), nameSize+1);
 		if (nameCString[0]>64 && nameCString[0]<91)
 			nameCString[0] += 32;
 		nameMaxSymbol = gensym(nameCString);
