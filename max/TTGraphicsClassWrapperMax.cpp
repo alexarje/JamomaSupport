@@ -495,8 +495,8 @@ TTErr wrapTTClassAsMaxUIClass(TTSymbolPtr ttblueClassName, char* maxClassName, W
 		// Add display styles for the Max 5 inspector
 		if (attr->type == kTypeBoolean)
 			CLASS_ATTR_STYLE(wrappedMaxClass->maxClass, (char*)name->getCString(), 0, "onoff");
-		if (name == TT("FontFace"))
-			CLASS_ATTR_STYLE(wrappedMaxClass->maxClass,	"FontFace", 0, "font");
+		if (name == TT("fontFace"))
+			CLASS_ATTR_STYLE(wrappedMaxClass->maxClass,	"fontFace", 0, "font");
 	}
 	
 	TTObjectRelease(&o);
