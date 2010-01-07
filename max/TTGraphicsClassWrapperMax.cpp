@@ -490,7 +490,7 @@ TTErr wrapTTClassAsMaxUIClass(TTSymbolPtr ttblueClassName, char* maxClassName, W
 		
 		hashtab_store(wrappedMaxClass->maxAttrNamesToTTAttrNames, nameMaxSymbol, ObjectPtr(name));
 		class_addattr(wrappedMaxClass->maxClass, attr_offset_new(nameCString, maxType, 0, (method)wrappedUIClass_attrGet, (method)wrappedUIClass_attrSet, NULL));
-		CLASS_ATTR_SAVE(wrappedMaxClass->maxClass, (char*)name->getCString(), 0);
+		CLASS_ATTR_SAVE(wrappedMaxClass->maxClass, nameCString, 0);
 		
 		// Add display styles for the Max 5 inspector
 		if (attr->type == kTypeBoolean)
