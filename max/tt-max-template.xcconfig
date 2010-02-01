@@ -20,7 +20,7 @@ GRAPHICS =		$(SRCROOT)/../../../../Graphics
 MULTICORE =		$(SRCROOT)/../../../../Multicore
 FOUNDATION =	$(SRCROOT)/../../../../Foundation
 MODULAR =		$(SRCROOT)/../../../../Modular
-BUILDS =		$(SRCROOT)/../../../../../Builds
+BUILDS =		$(SRCROOT)/../../../../../Builds/MaxMSP
 
 HEADER_SEARCH_PATHS = /Developer/Headers/FlatCarbon "$(C74SUPPORT)/max-includes" "$(C74SUPPORT)/msp-includes" "$(C74SUPPORT)/jit-includes" "$(SRCROOT)/.." "$(FOUNDATION)/library/includes" "$(DSPLIB)/library/includes" "$(GRAPHICS)/library/includes" "$(MULTICORE)/library/includes" "$(MODULAR)/library/**"
 FRAMEWORK_SEARCH_PATHS = "$(C74SUPPORT)/max-includes" "$(C74SUPPORT)/msp-includes" "$(C74SUPPORT)/jit-includes" "$(DSPLIB)/library/build-mac"
