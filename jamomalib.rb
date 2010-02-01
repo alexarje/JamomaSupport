@@ -120,6 +120,23 @@ end
     return 0  
   end
 
+  def copyfile(filename, sourcepath, dstpath)
+    out = ""
+    err = ""
+
+    puts "copy -r  #{sourcepath}/#{filename}   -->  #{dstpath}/#{filename}"
+
+    Open3.popen3("cp -R #{sourcepath}/#{filename} #{dstpath}/#{filename}") do |stdin, stdout, stderr|
+      out = stdout.read
+      err = stderr.read
+    end
+    log_build(out)
+    log_error(err)
+
+    return 0  
+  end
+
+
 
   def build_xcode_project(projectdir, projectname, configuration, clean)
     out = ""
@@ -183,14 +200,25 @@ end
       else
         @cur_count += build_xcode_project(projectdir, projectname, configuration, clean)
       end
+      
 
       Dir.chdir(olddir)
     else
       puts"File Does not exist: #{projectdir}/#{projectname}"
     end
-  end
+  end     
+  
 
-
+  def copy_helpfile(filename, filedir, dstdir)
+    if FileTest.exist?("#{filedir}/#{filename}")
+      @cur_total+=1
+      @cur_count += copyfile(filename , filedir, dstdir)       
+   else
+      puts"File Does not exist: #{filedir}/#{filename}"
+    end
+  end        
+  
+  
   def find_and_build_project(projectdir, configuration, clean)
 
   if win32?
@@ -206,6 +234,17 @@ end
     end
   end
 
+  
+  def find_and_copy_helpfile(filedir, dstdir)
+
+    	rgx = /.maxhelp/
+    Dir.foreach(filedir) do |file|
+      if rgx.match(file)
+          copy_helpfile(file, filedir, dstdir)
+      end
+  end 
+ end
+
 
   def build_dir(dir, configuration, clean)
     dir = "#{@svn_root}/#{dir}"
@@ -217,6 +256,20 @@ end
       next if !FileTest.directory?("#{dir}/#{subf}")
       find_and_build_project("#{dir}/#{subf}", configuration, clean)
     end
-  end
+  end   
 
+#end  
+
+    def maxhelp_dir(dir, dstdir)
+    dir = "#{@svn_root}#{dir}"
+    return if !FileTest.exist?(dir) || !FileTest.directory?(dir)
+
+    Dir.foreach(dir) do |subf|
+      next if /^\./.match(subf)
+      next if /common/.match(subf)
+      next if !FileTest.directory?("#{dir}/#{subf}")
+      find_and_copy_helpfile("#{dir}/#{subf}", dstdir) 
+    end
+  end
+  
 end
