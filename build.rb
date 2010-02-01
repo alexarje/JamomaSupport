@@ -246,7 +246,18 @@ puts "Building Max Externals..."
 zero_count
 build_dir("implementations/MaxMSP", configuration, clean)  
 ex_total, ex_count = get_count
+puts ""    
 
+###################################################################
+# HELP FILES
+###################################################################
+puts "Copying Maxhelp files..."
+zero_count
+maxhelp_dir("implementations/MaxMSP", "../../../Builds/MaxMSP")  
+ex_total, ex_count = get_count
+puts ""
+
+   
 extension = ".mxo"
 if win32?
 	extension = ".mxe"
@@ -262,7 +273,6 @@ if win32?
 	dst_folder = "windows"
 end
 
-puts ""
 
 
 ###################################################################
