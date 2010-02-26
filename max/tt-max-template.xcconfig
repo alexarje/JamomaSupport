@@ -3,7 +3,7 @@
 // Changes to the settings in this file will be applied all projects
 // To change settings for only one of the examples, override the settings using Xcode's target inspector.
 //
-// Copyright © 2009, Timothy Place
+// Copyright ¬© 2009, Timothy Place
 // http://electrotap.com/
 
 
@@ -16,13 +16,14 @@ SVNREV = 40156
 // Paths
 C74SUPPORT =	$(SRCROOT)/../../../supports/objectivemax/SDKs/Max5/c74support
 DSPLIB =		$(SRCROOT)/../../../../DSP
+GRAPH =			$(SRCROOT)/../../../../Graph
 GRAPHICS =		$(SRCROOT)/../../../../Graphics
 MULTICORE =		$(SRCROOT)/../../../../Multicore
 FOUNDATION =	$(SRCROOT)/../../../../Foundation
 MODULAR =		$(SRCROOT)/../../../../Modular
 BUILDS =		$(SRCROOT)/../../../../../Builds/MaxMSP
 
-HEADER_SEARCH_PATHS = /Developer/Headers/FlatCarbon "$(C74SUPPORT)/max-includes" "$(C74SUPPORT)/msp-includes" "$(C74SUPPORT)/jit-includes" "$(SRCROOT)/.." "$(FOUNDATION)/library/includes" "$(DSPLIB)/library/includes" "$(GRAPHICS)/library/includes" "$(MULTICORE)/library/includes" "$(MODULAR)/library/**"
+HEADER_SEARCH_PATHS = /Developer/Headers/FlatCarbon "$(C74SUPPORT)/max-includes" "$(C74SUPPORT)/msp-includes" "$(C74SUPPORT)/jit-includes" "$(SRCROOT)/.." "$(FOUNDATION)/library/includes" "$(DSPLIB)/library/includes" "$(GRAPH)/library/includes" "$(GRAPHICS)/library/includes" "$(MULTICORE)/library/includes" "$(MODULAR)/library/**"
 FRAMEWORK_SEARCH_PATHS = "$(C74SUPPORT)/max-includes" "$(C74SUPPORT)/msp-includes" "$(C74SUPPORT)/jit-includes" "$(DSPLIB)/library/build-mac"
 DSTROOT = $(BUILDS)
 // (This next path is relative to DSTROOT)
