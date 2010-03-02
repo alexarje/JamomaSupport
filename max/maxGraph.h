@@ -8,8 +8,8 @@
  * http://www.gnu.org/licenses/lgpl.html 
  */
 
-#ifndef __MAXBAER_H__
-#define __MAXBAER_H__
+#ifndef __TT_MAX_GRAPH_H__
+#define __TT_MAX_GRAPH_H__
 
 #include "ext.h"					// Max Header
 #include "ext_obex.h"				// Max Object Extensions (attributes) Header
@@ -116,5 +116,5 @@ TTErr MaxGraphConnect(ObjectPtr self, TTGraphObjectPtr audioSourceObject, TTUInt
 TTErr MaxGraphDrop(ObjectPtr x, long inletNumber, ObjectPtr sourceMaxObject, long sourceOutletNumber);
 TTErr MaxGraphObject(ObjectPtr x, TTGraphObjectPtr* returnedGraphObject);
 
-#endif // __MAXBAER_H__
+#endif // __TT_MAX_GRAPH_H__
 
