@@ -21,7 +21,6 @@
 #include "TTGraphAPI.h"				// Definitions for Jamoma Graph
 
 
-
 // TYPE DEFINITIONS
 
 typedef t_class*	ClassPtr;
