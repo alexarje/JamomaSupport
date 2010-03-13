@@ -65,7 +65,7 @@ ObjectPtr wrappedClass_new(SymbolPtr name, AtomCount argc, AtomPtr argv)
 		if(attrstart && argv)
 			x->maxNumChannels = atom_getlong(argv);
 		
-		ttEnvironment->setAttributeValue(kTTSym_sr, sr);
+		ttEnvironment->setAttributeValue(kTTSym_SampleRate, sr);
 
 		TTObjectInstantiate(wrappedMaxClass->ttblueClassName, &x->wrappedObject, x->maxNumChannels);
 		TTObjectInstantiate(TT("audiosignal"), &x->audioIn, x->maxNumChannels);
@@ -274,7 +274,7 @@ void wrappedClass_dsp(WrappedInstancePtr x, t_signal **sp, short *count)
 	void		**audioVectors = NULL;
 	
 	// make sure that the global sample rate used by the environment is updated, in case it has changed
-	ttEnvironment->setAttributeValue(kTTSym_sr, sys_getsr());
+	ttEnvironment->setAttributeValue(kTTSym_SampleRate, sys_getsr());
 		
 	audioVectors = (void**)sysmem_newptr(sizeof(void*) * ((x->maxNumChannels * 2) + 1 + x->numControlSignals));
 	audioVectors[k] = x;
@@ -296,14 +296,14 @@ void wrappedClass_dsp(WrappedInstancePtr x, t_signal **sp, short *count)
 		}
 	}
 	
-	x->audioIn->setAttributeValue(TT("numChannels"), x->numChannels);
-	x->audioOut->setAttributeValue(TT("numChannels"), x->numChannels);
-	x->audioIn->setAttributeValue(TT("vectorSize"), x->vs);
-	x->audioOut->setAttributeValue(TT("vectorSize"), x->vs);
+	x->audioIn->setAttributeValue(TT("NumChannels"), x->numChannels);
+	x->audioOut->setAttributeValue(TT("NumChannels"), x->numChannels);
+	x->audioIn->setAttributeValue(TT("VectorSize"), x->vs);
+	x->audioOut->setAttributeValue(TT("VectorSize"), x->vs);
 	//audioIn will be set in the perform method
 	x->audioOut->sendMessage(TT("alloc"));
 	
-	x->wrappedObject->setAttributeValue(TT("sr"), sp[0]->s_sr);
+	x->wrappedObject->setAttributeValue(TT("SampleRate"), sp[0]->s_sr);
 	
 	j=i;
 	for(i=0; i < x->numControlSignals; i++){
@@ -374,7 +374,7 @@ TTErr wrapTTClassAsMaxClass(TTSymbolPtr ttblueClassName, char* maxClassName, Wra
 		TTUInt32		nameSize = 0;
 		
 		v.get(i, &name);
-		if(name == TT("maxNumChannels") || name == TT("processInPlace"))
+		if(name == TT("MaxNumChannels") || name == TT("processInPlace"))
 			continue;	// don't expose these attributes to Max users
 		
 		o->findAttribute(name, &attr);
