@@ -129,7 +129,7 @@ t_max_err wrappedClass_attrGet(TTPtr self, ObjectPtr attr, AtomCount* argc, Atom
 	TTSymbolPtr	ttAttrName = NULL;
 	MaxErr		err;
 	
-	err = hashtab_lookup(x->wrappedClassDefinition->maxAttrNamesToTTAttrNames, attrName, (ObjectPtr*)&ttAttrName);
+	err = hashtab_lookup(x->wrappedClassDefinition->maxNamesToTTNames, attrName, (ObjectPtr*)&ttAttrName);
 	if (err)
 		return err;
 	
@@ -139,7 +139,7 @@ t_max_err wrappedClass_attrGet(TTPtr self, ObjectPtr attr, AtomCount* argc, Atom
 	if (!(*argv)) // otherwise use memory passed in
 		*argv = (t_atom *)sysmem_newptr(sizeof(t_atom) * v.getSize());
 
-	for(i=0; i<v.getSize(); i++){
+	for (i=0; i<v.getSize(); i++) {
 		if(v.getType(i) == kTypeFloat32 || v.getType(i) == kTypeFloat64){
 			TTFloat64	value;
 			v.get(i, value);
@@ -175,19 +175,19 @@ t_max_err wrappedClass_attrSet(TTPtr self, ObjectPtr attr, AtomCount argc, AtomP
 {
 	WrappedInstancePtr x = (WrappedInstancePtr)self;
 	
-	if(argc && argv){
+	if (argc && argv) {
 		SymbolPtr	attrName = (SymbolPtr)object_method(attr, _sym_getname);
 		TTValue		v;
 		AtomCount	i;
 		TTSymbolPtr	ttAttrName = NULL;
 		MaxErr		err;
 		
-		err = hashtab_lookup(x->wrappedClassDefinition->maxAttrNamesToTTAttrNames, attrName, (ObjectPtr*)&ttAttrName);
+		err = hashtab_lookup(x->wrappedClassDefinition->maxNamesToTTNames, attrName, (ObjectPtr*)&ttAttrName);
 		if (err)
 			return err;
 		
 		v.setSize(argc);
-		for(i=0; i<argc; i++){
+		for (i=0; i<argc; i++) {
 			if(atom_gettype(argv+i) == A_LONG)
 				v.set(i, AtomGetInt(argv+i));
 			else if(atom_gettype(argv+i) == A_FLOAT)
@@ -206,26 +206,63 @@ t_max_err wrappedClass_attrSet(TTPtr self, ObjectPtr attr, AtomCount argc, AtomP
 
 void wrappedClass_anything(TTPtr self, SymbolPtr s, AtomCount argc, AtomPtr argv)
 {
-	WrappedInstancePtr x = (WrappedInstancePtr)self;
+	WrappedInstancePtr	x = (WrappedInstancePtr)self;
+	TTValue				v;
+	TTSymbolPtr			ttName = NULL;
+	MaxErr				err;
 	
-	if(argc && argv){
+	err = hashtab_lookup(x->wrappedClassDefinition->maxNamesToTTNames, s, (ObjectPtr*)&ttName);
+	if (err) {
+		object_post(ObjectPtr(x), "no method found for %s", s->s_name);
+		return;
+	}
+
+	if (argc && argv) {
 		TTValue	v;
 		
 		v.setSize(argc);
-		for(AtomCount i=0; i<argc; i++){
-			if(atom_gettype(argv+i) == A_LONG)
+		for (AtomCount i=0; i<argc; i++) {
+			if (atom_gettype(argv+i) == A_LONG)
 				v.set(i, AtomGetInt(argv+i));
-			else if(atom_gettype(argv+i) == A_FLOAT)
+			else if (atom_gettype(argv+i) == A_FLOAT)
 				v.set(i, atom_getfloat(argv+i));
-			else if(atom_gettype(argv+i) == A_SYM)
+			else if (atom_gettype(argv+i) == A_SYM)
 				v.set(i, TT(atom_getsym(argv+i)->s_name));
 			else
 				object_error(ObjectPtr(x), "bad type for message arg");
 		}
-		x->wrappedObject->sendMessage(TT(s->s_name), v);
+		x->wrappedObject->sendMessage(ttName, v);
+		
+		// process the returned value for the dumpout outlet
+		{
+			AtomCount	ac = v.getSize();
+
+			if (ac) {
+				AtomPtr		av = (AtomPtr)malloc(sizeof(Atom) * ac);
+				
+				for (AtomCount i=0; i<ac; i++) {
+					if (v.getType() == kTypeSymbol){
+						TTSymbolPtr ttSym = NULL;
+						v.get(i, &ttSym);
+						atom_setsym(av+i, gensym((char*)ttSym->getCString()));
+					}
+					else if (v.getType() == kTypeFloat32 || v.getType() == kTypeFloat64) {
+						TTFloat64 f = 0.0;
+						v.get(i, f);
+						atom_setfloat(av+i, f);
+					}
+					else {
+						TTInt32 l = 0;
+						v.get(i, l);
+						atom_setfloat(av+i, l);
+					}
+				}
+				object_obex_dumpout(self, s, ac, av);
+			}
+		}
 	}
 	else
-		x->wrappedObject->sendMessage(TT(s->s_name));
+		x->wrappedObject->sendMessage(ttName);
 }
 
 
@@ -328,11 +365,15 @@ TTErr wrapTTClassAsMaxClass(TTSymbolPtr ttblueClassName, char* maxClassName, Wra
 	TTValue			v;
 	TTUInt16		numChannels = 1;
 	WrappedClass*	wrappedMaxClass = NULL;
-
+	TTSymbolPtr		name = NULL;
+	TTCString		nameCString = NULL;
+	SymbolPtr		nameMaxSymbol = NULL;
+	TTUInt32		nameSize = 0;
+	
 	common_symbols_init();
 	TTDSPInit();
 	
-	if(!wrappedMaxClasses)
+	if (!wrappedMaxClasses)
 		wrappedMaxClasses = hashtab_new(0);
 	
 	wrappedMaxClass = new WrappedClass;
@@ -348,58 +389,71 @@ TTErr wrapTTClassAsMaxClass(TTSymbolPtr ttblueClassName, char* maxClassName, Wra
 	wrappedMaxClass->validityCheck = NULL;
 	wrappedMaxClass->validityCheckArgument = NULL;
 	wrappedMaxClass->options = options;
-	wrappedMaxClass->maxAttrNamesToTTAttrNames = hashtab_new(0);
+	wrappedMaxClass->maxNamesToTTNames = hashtab_new(0);
 	
 	// Create a temporary instance of the class so that we can query it.
 	TTObjectInstantiate(ttblueClassName, &o, numChannels);
 
 	o->getMessageNames(v);
-	for(TTUInt16 i=0; i<v.getSize(); i++){
-		TTSymbolPtr			name = NULL;
-		
+	for (TTUInt16 i=0; i<v.getSize(); i++) {
 		v.get(i, &name);
-		if(name == TT("updateMaxNumChannels") || name == TT("updateSr"))
-			continue;	// don't expose these attributes to Max users
-
-		class_addmethod(wrappedMaxClass->maxClass, (method)wrappedClass_anything, (char*)name->getCString(), A_GIMME, 0);
-	}
-	
-	o->getAttributeNames(v);
-	for(TTUInt16 i=0; i<v.getSize(); i++){
-		TTSymbolPtr		name = NULL;
-		TTAttributePtr	attr = NULL;
-		SymbolPtr		maxType = _sym_long;
-		TTCString		nameCString = NULL;
-		SymbolPtr		nameMaxSymbol = NULL;
-		TTUInt32		nameSize = 0;
-		
-		v.get(i, &name);
-		if(name == TT("MaxNumChannels") || name == TT("processInPlace"))
-			continue;	// don't expose these attributes to Max users
-		
-		o->findAttribute(name, &attr);
-
-		if(attr->type == kTypeFloat32)
-			maxType = _sym_float32;
-		else if(attr->type == kTypeFloat64)
-			maxType = _sym_float64;
-		else if(attr->type == kTypeSymbol || attr->type == kTypeString)
-			maxType = _sym_symbol;
-		
-		// convert first letter to lower-case if it isn't already
 		nameSize = name->getString().length();
 		nameCString = new char[nameSize+1];
 		strncpy_zero(nameCString, name->getCString(), nameSize+1);
-		if (nameCString[0]>64 && nameCString[0]<91)
-			nameCString[0] += 32;
-		nameMaxSymbol = gensym(nameCString);
-		
-		hashtab_store(wrappedMaxClass->maxAttrNamesToTTAttrNames, nameMaxSymbol, ObjectPtr(name));
-		class_addattr(wrappedMaxClass->maxClass, attr_offset_new(nameCString, maxType, 0, (method)wrappedClass_attrGet, (method)wrappedClass_attrSet, NULL));
 
-		// Add display styles for the Max 5 inspector
-		if(attr->type == kTypeBoolean)
-			CLASS_ATTR_STYLE(wrappedMaxClass->maxClass, (char*)name->getCString(), 0, "onoff");
+		if (nameCString[0] > 64 && nameCString[0] < 91) {
+			nameCString[0] += 32;							// convert first letter to lower-case for Max
+			nameMaxSymbol = gensym(nameCString);
+			
+			hashtab_store(wrappedMaxClass->maxNamesToTTNames, nameMaxSymbol, ObjectPtr(name));
+			class_addmethod(wrappedMaxClass->maxClass, (method)wrappedClass_anything, nameCString, A_GIMME, 0);
+		}
+		delete nameCString;
+		nameCString = NULL;
+	}
+	
+	o->getAttributeNames(v);
+	for (TTUInt16 i=0; i<v.getSize(); i++) {
+		TTAttributePtr	attr = NULL;
+		SymbolPtr		maxType = _sym_long;
+		
+		v.get(i, &name);
+		nameSize = name->getString().length();
+		nameCString = new char[nameSize+1];
+		strncpy_zero(nameCString, name->getCString(), nameSize+1);
+
+		// only expose messages to Max if they begin with an upper-case letter
+		if (nameCString[0]>64 && nameCString[0]<91) {
+			nameCString[0] += 32;
+			nameMaxSymbol = gensym(nameCString);
+					
+			if (name == TT("MaxNumChannels"))
+				continue;						// don't expose these attributes to Max users
+			if (name == TT("Bypass")) {
+				if (wrappedMaxClass->options && !wrappedMaxClass->options->lookup(TT("generator"), v))
+					continue;					// generators don't have inputs, and so don't really provide a bypass
+			}
+			
+			o->findAttribute(name, &attr);
+			
+			if (attr->type == kTypeFloat32)
+				maxType = _sym_float32;
+			else if (attr->type == kTypeFloat64)
+				maxType = _sym_float64;
+			else if (attr->type == kTypeSymbol || attr->type == kTypeString)
+				maxType = _sym_symbol;
+			
+			hashtab_store(wrappedMaxClass->maxNamesToTTNames, nameMaxSymbol, ObjectPtr(name));
+			class_addattr(wrappedMaxClass->maxClass, attr_offset_new(nameCString, maxType, 0, (method)wrappedClass_attrGet, (method)wrappedClass_attrSet, NULL));
+			
+			// Add display styles for the Max 5 inspector
+			if (attr->type == kTypeBoolean)
+				CLASS_ATTR_STYLE(wrappedMaxClass->maxClass, (char*)name->getCString(), 0, "onoff");
+			if (name == TT("fontFace"))
+				CLASS_ATTR_STYLE(wrappedMaxClass->maxClass,	"fontFace", 0, "font");
+		}
+		delete nameCString;
+		nameCString = NULL;
 	}
 	
 	TTObjectRelease(&o);
@@ -411,7 +465,7 @@ TTErr wrapTTClassAsMaxClass(TTSymbolPtr ttblueClassName, char* maxClassName, Wra
 	
 	class_dspinit(wrappedMaxClass->maxClass);
 	class_register(_sym_box, wrappedMaxClass->maxClass);
-	if(c)
+	if (c)
 		*c = wrappedMaxClass;
 	
 	hashtab_store(wrappedMaxClasses, wrappedMaxClass->maxClassName, ObjectPtr(wrappedMaxClass));
@@ -423,7 +477,7 @@ TTErr wrapTTClassAsMaxClass(TTSymbolPtr ttblueClassName, char* maxClassName, Wra
 {
 	TTErr err = wrapTTClassAsMaxClass(ttblueClassName, maxClassName, c);
 	
-	if(!err){
+	if (!err) {
 		(*c)->validityCheck = validityCheck;
 		(*c)->validityCheckArgument = (*c)->maxClass;
 	}
@@ -434,7 +488,7 @@ TTErr wrapTTClassAsMaxClass(TTSymbolPtr ttblueClassName, char* maxClassName, Wra
 {
 	TTErr err = wrapTTClassAsMaxClass(ttblueClassName, maxClassName, c, options);
 	
-	if(!err){
+	if (!err) {
 		(*c)->validityCheck = validityCheck;
 		(*c)->validityCheckArgument = (*c)->maxClass;
 	}
@@ -446,7 +500,7 @@ TTErr wrapTTClassAsMaxClass(TTSymbolPtr ttblueClassName, char* maxClassName, Wra
 {
 	TTErr err = wrapTTClassAsMaxClass(ttblueClassName, maxClassName, c);
 	
-	if(!err){
+	if (!err) {
 		(*c)->validityCheck = validityCheck;
 		(*c)->validityCheckArgument = validityCheckArgument;
 	}
@@ -457,7 +511,7 @@ TTErr wrapTTClassAsMaxClass(TTSymbolPtr ttblueClassName, char* maxClassName, Wra
 {
 	TTErr err = wrapTTClassAsMaxClass(ttblueClassName, maxClassName, c, options);
 	
-	if(!err){
+	if (!err) {
 		(*c)->validityCheck = validityCheck;
 		(*c)->validityCheckArgument = validityCheckArgument;
 	}
