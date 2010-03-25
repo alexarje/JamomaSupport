@@ -397,7 +397,8 @@ TTErr wrapTTClassAsMaxClass(TTSymbolPtr ttblueClassName, char* maxClassName, Wra
 	o->getMessageNames(v);
 	for (TTUInt16 i=0; i<v.getSize(); i++) {
 		v.get(i, &name);
-		nameSize = name->getString().length();
+		//nameSize = name->getString().length();	// to -- this crash on Windows...
+		nameSize = strlen(name->getCString());
 		nameCString = new char[nameSize+1];
 		strncpy_zero(nameCString, name->getCString(), nameSize+1);
 
@@ -418,7 +419,8 @@ TTErr wrapTTClassAsMaxClass(TTSymbolPtr ttblueClassName, char* maxClassName, Wra
 		SymbolPtr		maxType = _sym_long;
 		
 		v.get(i, &name);
-		nameSize = name->getString().length();
+		//nameSize = name->getString().length();	// to -- this crash on Windows...
+		nameSize = strlen(name->getCString());
 		nameCString = new char[nameSize+1];
 		strncpy_zero(nameCString, name->getCString(), nameSize+1);
 
