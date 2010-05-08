@@ -242,8 +242,8 @@ end
       if rgx.match(file)
           copy_helpfile(file, filedir, dstdir)
       end
-  end 
- end
+    end 
+  end
 
 
   def build_dir(dir, configuration, clean)
@@ -261,15 +261,15 @@ end
 #end  
 
     def maxhelp_dir(dir, dstdir)
-    dir = "#{@svn_root}#{dir}"
-    return if !FileTest.exist?(dir) || !FileTest.directory?(dir)
+      dir = "#{@svn_root}#{dir}"
+      return if !FileTest.exist?(dir) || !FileTest.directory?(dir)
 
-    Dir.foreach(dir) do |subf|
-      next if /^\./.match(subf)
-      next if /common/.match(subf)
-      next if !FileTest.directory?("#{dir}/#{subf}")
-      find_and_copy_helpfile("#{dir}/#{subf}", dstdir) 
+      Dir.foreach(dir) do |subf|
+        next if /^\./.match(subf)
+        next if /common/.match(subf)
+        next if !FileTest.directory?("#{dir}/#{subf}")
+        find_and_copy_helpfile("#{dir}/#{subf}", dstdir) 
+      end
     end
-  end
   
 end
