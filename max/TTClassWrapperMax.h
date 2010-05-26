@@ -18,6 +18,7 @@
 #include "TTFoundationAPI.h"		// Jamoma Foundation API
 #include "TTDSP.h"					// Jamoma DSP API
 #include "TTGraphics.h"				// Jamoma Graphics API
+#include "TTModular.h"				// Jamoma Modular API
 
 #ifdef WIN_VERSION
 #define TTCLASSWRAPPERMAX_EXPORT __declspec(dllexport) 
@@ -36,6 +37,10 @@ typedef t_max_err	MaxErr;
 
 typedef TTErr (*TTValidityCheckFunction)(const TTPtr data);		///< A type that can be used to store a pointer to a validity checking function.
 
+typedef void (*WrappedClass_newSpecificities)(TTPtr self, AtomCount argc, AtomPtr argv);
+																///< Definition for methods called during the 'new' method in order to make specific things
+
+
 class WrappedClassOptions;
 
 typedef struct _wrappedClass {
@@ -46,6 +51,8 @@ typedef struct _wrappedClass {
 	TTPtr					validityCheckArgument;				///< An argument to pass to the validityCheck function when it is called.
 	WrappedClassOptions*	options;							///< Additional configuration options specified for the class.
 	t_hashtab*				maxNamesToTTNames;					///< names may not be direct mappings, as we downcase the first letter.
+	
+	WrappedClass_newSpecificities	wrap_newSpec;				///< A method called during the 'new' method
 } WrappedClass;
 
 
