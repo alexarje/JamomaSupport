@@ -18,7 +18,6 @@
 #include "TTFoundationAPI.h"		// Jamoma Foundation API
 #include "TTDSP.h"					// Jamoma DSP API
 #include "TTGraphics.h"				// Jamoma Graphics API
-#include "TTModular.h"				// Jamoma Modular API
 
 #ifdef WIN_VERSION
 #define TTCLASSWRAPPERMAX_EXPORT __declspec(dllexport) 
