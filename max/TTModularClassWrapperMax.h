@@ -19,8 +19,24 @@
 #include "TTModular.h"				// Jamoma Modular API
 #include "Nodelib.h"				// Jamoma Nodelib for Max (maybe it have to be renamed now ... ?)
 
-// Method definition for specific TT class things
-typedef void (*WrapTTModularClassSpecificities)(WrappedClassPtr c);
+
+// Definition for specific TT class things
+typedef void (*Spec_WrapTTModularClass)(WrappedClassPtr c);
+
+// Definition for methods called during the 'new' method in order to make specific things
+typedef void (*Spec_WrappedClass_new)(TTPtr self, AtomCount argc, AtomPtr argv);
+
+// Definition for methods called during the 'anything' method in order to make specific things
+typedef void (*Spec_WrappedClass_anything)(TTPtr self, SymbolPtr msg, AtomCount argc, AtomPtr argv);
+
+
+typedef struct _modularSpecificities {
+	
+	Spec_WrapTTModularClass		_wrap;
+	Spec_WrappedClass_new		_new;
+	Spec_WrappedClass_anything	_any;
+	
+} ModularSpec;
 
 
 // Data Structure for this object
@@ -55,6 +71,6 @@ void		wrappedModularClass_anything(TTPtr self, SymbolPtr s, AtomCount argc, Atom
 
 // public:
 // Wrap a TTBlue class as a Max class.
-TTErr		wrapTTModularClassAsMaxClass(TTSymbolPtr ttblueClassName, char* maxClassName, WrappedClassPtr* c, WrapTTModularClassSpecificities wrapTTClassSpec, WrappedClass_newSpecificities wrap_newSpec);
+TTErr		wrapTTModularClassAsMaxClass(TTSymbolPtr ttblueClassName, char* maxClassName, WrappedClassPtr* c, ModularSpec* specificities);
 
 #endif // __TT_MODULAR_CLASS_WRAPPER_MAX_H__

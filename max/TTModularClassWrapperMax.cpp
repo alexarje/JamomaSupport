@@ -42,8 +42,13 @@ ObjectPtr wrappedModularClass_new(SymbolPtr name, AtomCount argc, AtomPtr argv)
 		
 		x->wrappedClassDefinition = wrappedMaxClass;
 		
-		// Make specific things 
-		wrappedMaxClass->wrap_newSpec((TTPtr)x, argc, argv);
+		x->subscriberObject = NULL;
+		
+		// Make specific things
+		ModularSpec *spec = (ModularSpec*)wrappedMaxClass->specificities;
+		if (spec)
+			if (spec->_new)
+				spec->_new((TTPtr)x, argc, argv);
 		
 		// handle attribute args
 		attr_args_process(x, argc, argv);
@@ -55,6 +60,9 @@ ObjectPtr wrappedModularClass_new(SymbolPtr name, AtomCount argc, AtomPtr argv)
 void wrappedModularClass_free(WrappedModularInstancePtr x)
 {
 	TTObjectRelease(&x->wrappedObject);
+	
+	if (x->subscriberObject)
+		TTObjectRelease(TTObjectHandle(&x->subscriberObject));
 }
 
 t_max_err wrappedModularClass_attrGet(TTPtr self, ObjectPtr attr, AtomCount* argc, AtomPtr* argv)
@@ -138,11 +146,8 @@ void wrappedModularClass_anything(TTPtr self, SymbolPtr s, AtomCount argc, AtomP
 	MaxErr				err;
 	
 	err = hashtab_lookup(x->wrappedClassDefinition->maxNamesToTTNames, s, (ObjectPtr*)&ttName);
-	if (err) {
-		
-		object_post(ObjectPtr(x), "no method found for %s", s->s_name);
+	if (err)
 		return;
-	}
 
 	if (argc && argv) {
 		TTValue	v;
@@ -158,6 +163,7 @@ void wrappedModularClass_anything(TTPtr self, SymbolPtr s, AtomCount argc, AtomP
 			else
 				object_error(ObjectPtr(x), "bad type for message arg");
 		}
+		
 		x->wrappedObject->sendMessage(ttName, v);
 		
 		// process the returned value for the dumpout outlet
@@ -184,7 +190,7 @@ void wrappedModularClass_anything(TTPtr self, SymbolPtr s, AtomCount argc, AtomP
 						atom_setfloat(av+i, l);
 					}
 				}
-				object_obex_dumpout(self, s, ac, av);
+				//TODO return value out (self, s, ac, av);
 			}
 		}
 	}
@@ -192,7 +198,7 @@ void wrappedModularClass_anything(TTPtr self, SymbolPtr s, AtomCount argc, AtomP
 		x->wrappedObject->sendMessage(ttName);
 }
 
-TTErr wrapTTModularClassAsMaxClass(TTSymbolPtr ttblueClassName, char* maxClassName, WrappedClassPtr* c, WrapTTModularClassSpecificities wrapTTClassSpec, WrappedClass_newSpecificities wrap_newSpec)
+TTErr wrapTTModularClassAsMaxClass(TTSymbolPtr ttblueClassName, char* maxClassName, WrappedClassPtr* c, ModularSpec* specificities)
 {
 	TTObject*		o = NULL;
 	TTValue			v, args;
@@ -223,7 +229,7 @@ TTErr wrapTTModularClassAsMaxClass(TTSymbolPtr ttblueClassName, char* maxClassNa
 	wrappedMaxClass->options = NULL;
 	wrappedMaxClass->maxNamesToTTNames = hashtab_new(0);
 	
-	wrappedMaxClass->wrap_newSpec = wrap_newSpec;
+	wrappedMaxClass->specificities = specificities;
 	
 	// Create a temporary instance of the class so that we can query it.
 	TTObjectInstantiate(ttblueClassName, &o, args);
@@ -288,10 +294,12 @@ TTErr wrapTTModularClassAsMaxClass(TTSymbolPtr ttblueClassName, char* maxClassNa
 	TTObjectRelease(&o);
 	
 	class_addmethod(wrappedMaxClass->maxClass, (method)stdinletinfo,			"inletinfo",	A_CANT, 0);
+	class_addmethod(wrappedMaxClass->maxClass, (method)specificities->_any,		"anything",		A_GIMME, 0);
 	
 	// Register specific methods and do specific things
-	if (wrapTTClassSpec)
-		wrapTTClassSpec(wrappedMaxClass);
+	if (specificities)
+		if (specificities->_wrap)
+			specificities->_wrap(wrappedMaxClass);
 	
 	class_register(_sym_box, wrappedMaxClass->maxClass);
 	if (c)
