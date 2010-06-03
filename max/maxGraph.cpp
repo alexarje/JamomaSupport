@@ -71,14 +71,14 @@ ObjectPtr wrappedClass_new(SymbolPtr name, AtomCount argc, AtomPtr argv)
 				numOutputs = atom_getlong(argv+argumentOffsetToDefineTheNumberOfOutlets);
 		}
 		for (TTInt16 i=numOutputs-1; i>=0; i--)
-			self->graphOutlets[i] = outlet_new(self, "multicore.connect");
+			self->graphOutlets[i] = outlet_new(self, "audio.connect");
 
 		self->wrappedClassDefinition = wrappedMaxClass;
 		v.setSize(3);
 		v.set(0, wrappedMaxClass->ttClassName);
 		v.set(1, numInputs);
 		v.set(2, numOutputs);
-		err = TTObjectInstantiate(TT("multicore.object"), (TTObjectPtr*)&self->graphObject, v);
+		err = TTObjectInstantiate(TT("audio.object"), (TTObjectPtr*)&self->graphObject, v);
 				
 		attr_args_process(self, argc, argv);
 	}
@@ -95,7 +95,7 @@ void wrappedClass_free(WrappedInstancePtr self)
 
 
 
-// METHODS SPECIFIC TO MULTICORE EXTERNALS
+// METHODS SPECIFIC TO AUDIO GRAPH EXTERNALS
 
 
 TTErr MaxGraphReset(ObjectPtr x)
