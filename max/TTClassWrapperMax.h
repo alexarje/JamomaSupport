@@ -36,6 +36,7 @@ typedef t_max_err	MaxErr;
 
 typedef TTErr (*TTValidityCheckFunction)(const TTPtr data);		///< A type that can be used to store a pointer to a validity checking function.
 
+
 class WrappedClassOptions;
 
 typedef struct _wrappedClass {
@@ -46,6 +47,8 @@ typedef struct _wrappedClass {
 	TTPtr					validityCheckArgument;				///< An argument to pass to the validityCheck function when it is called.
 	WrappedClassOptions*	options;							///< Additional configuration options specified for the class.
 	t_hashtab*				maxNamesToTTNames;					///< names may not be direct mappings, as we downcase the first letter.
+	
+	void*					specificities;						///< anything needed to deal with somes specificities of the class...
 } WrappedClass;
 
 
