@@ -354,12 +354,12 @@ void wrappedClass_dsp(WrappedInstancePtr x, t_signal **sp, short *count)
 }
 
 
-TTErr wrapTTClassAsMaxClass(TTSymbolPtr ttblueClassName, char* maxClassName, WrappedClassPtr* c)
+TTErr wrapTTClassAsMaxClass(TTSymbolPtr ttblueClassName, const char* maxClassName, WrappedClassPtr* c)
 {
 	return wrapTTClassAsMaxClass(ttblueClassName, maxClassName, c, (WrappedClassOptionsPtr)NULL);
 }
 
-TTErr wrapTTClassAsMaxClass(TTSymbolPtr ttblueClassName, char* maxClassName, WrappedClassPtr* c, WrappedClassOptionsPtr options)
+TTErr wrapTTClassAsMaxClass(TTSymbolPtr ttblueClassName, const char* maxClassName, WrappedClassPtr* c, WrappedClassOptionsPtr options)
 {
 	TTObject*		o = NULL;
 	TTValue			v;
@@ -377,8 +377,8 @@ TTErr wrapTTClassAsMaxClass(TTSymbolPtr ttblueClassName, char* maxClassName, Wra
 		wrappedMaxClasses = hashtab_new(0);
 	
 	wrappedMaxClass = new WrappedClass;
-	wrappedMaxClass->maxClassName = gensym(maxClassName);
-	wrappedMaxClass->maxClass = class_new(	maxClassName, 
+	wrappedMaxClass->maxClassName = gensym((char*)maxClassName);
+	wrappedMaxClass->maxClass = class_new(	(char*)maxClassName, 
 											(method)wrappedClass_new, 
 											(method)wrappedClass_free, 
 											sizeof(WrappedInstance), 
@@ -450,7 +450,7 @@ TTErr wrapTTClassAsMaxClass(TTSymbolPtr ttblueClassName, char* maxClassName, Wra
 			
 			// Add display styles for the Max 5 inspector
 			if (attr->type == kTypeBoolean)
-				CLASS_ATTR_STYLE(wrappedMaxClass->maxClass, (char*)name->getCString(), 0, "onoff");
+				CLASS_ATTR_STYLE(wrappedMaxClass->maxClass, (char*)name->getCString(), 0, (char*)"onoff");
 			if (name == TT("fontFace"))
 				CLASS_ATTR_STYLE(wrappedMaxClass->maxClass,	"fontFace", 0, "font");
 		}
@@ -475,7 +475,7 @@ TTErr wrapTTClassAsMaxClass(TTSymbolPtr ttblueClassName, char* maxClassName, Wra
 }
 
 
-TTErr wrapTTClassAsMaxClass(TTSymbolPtr ttblueClassName, char* maxClassName, WrappedClassPtr* c, TTValidityCheckFunction validityCheck)
+TTErr wrapTTClassAsMaxClass(TTSymbolPtr ttblueClassName, const char* maxClassName, WrappedClassPtr* c, TTValidityCheckFunction validityCheck)
 {
 	TTErr err = wrapTTClassAsMaxClass(ttblueClassName, maxClassName, c);
 	
@@ -486,7 +486,7 @@ TTErr wrapTTClassAsMaxClass(TTSymbolPtr ttblueClassName, char* maxClassName, Wra
 	return err;
 }
 
-TTErr wrapTTClassAsMaxClass(TTSymbolPtr ttblueClassName, char* maxClassName, WrappedClassPtr* c, TTValidityCheckFunction validityCheck, WrappedClassOptionsPtr options)
+TTErr wrapTTClassAsMaxClass(TTSymbolPtr ttblueClassName, const char* maxClassName, WrappedClassPtr* c, TTValidityCheckFunction validityCheck, WrappedClassOptionsPtr options)
 {
 	TTErr err = wrapTTClassAsMaxClass(ttblueClassName, maxClassName, c, options);
 	
@@ -498,7 +498,7 @@ TTErr wrapTTClassAsMaxClass(TTSymbolPtr ttblueClassName, char* maxClassName, Wra
 }
 
 
-TTErr wrapTTClassAsMaxClass(TTSymbolPtr ttblueClassName, char* maxClassName, WrappedClassPtr* c, TTValidityCheckFunction validityCheck, TTPtr validityCheckArgument)
+TTErr wrapTTClassAsMaxClass(TTSymbolPtr ttblueClassName, const char* maxClassName, WrappedClassPtr* c, TTValidityCheckFunction validityCheck, TTPtr validityCheckArgument)
 {
 	TTErr err = wrapTTClassAsMaxClass(ttblueClassName, maxClassName, c);
 	
@@ -509,7 +509,7 @@ TTErr wrapTTClassAsMaxClass(TTSymbolPtr ttblueClassName, char* maxClassName, Wra
 	return err;
 }
 
-TTErr wrapTTClassAsMaxClass(TTSymbolPtr ttblueClassName, char* maxClassName, WrappedClassPtr* c, TTValidityCheckFunction validityCheck, TTPtr validityCheckArgument, WrappedClassOptionsPtr options)
+TTErr wrapTTClassAsMaxClass(TTSymbolPtr ttblueClassName, const char* maxClassName, WrappedClassPtr* c, TTValidityCheckFunction validityCheck, TTPtr validityCheckArgument, WrappedClassOptionsPtr options)
 {
 	TTErr err = wrapTTClassAsMaxClass(ttblueClassName, maxClassName, c, options);
 	
